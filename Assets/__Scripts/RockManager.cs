@@ -4,15 +4,13 @@ using UnityEngine;
 
 public class RockManager : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
+    public GameObject rockPrefab;
+    public List<Rock> rocks;
 
-    // Update is called once per frame
-    void Update()
+    private void Awake()
     {
-        
+        Services.Rocks = this;
+
+        rocks = new List<Rock>();
     }
 }
