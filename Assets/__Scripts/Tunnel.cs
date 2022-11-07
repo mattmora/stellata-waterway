@@ -11,6 +11,32 @@ public class Tunnel : MonoBehaviour
     private Vector3 loopStart;
     private Vector3 loopEnd;
 
+    private PanelInfo empty = new PanelInfo(true, 0, -1);
+
+    public class PanelInfo 
+    {
+        public bool active;
+        public int spikeCount;
+        public int ballIndex;
+
+        public PanelInfo(bool active, int spikeCount, int ballIndex)
+        {
+            this.active = active;
+            this.spikeCount = spikeCount;
+            this.ballIndex = ballIndex;
+        }
+    }
+
+    public int dataIndex;
+
+    public bool simple;
+
+    private void Awake()
+    {
+        if (!simple) Services.MainTunnel = this;
+        dataIndex = 0;
+    }
+
     // Start is called before the first frame update
     void Start()
     {
@@ -29,14 +55,33 @@ public class Tunnel : MonoBehaviour
             if (segment.transform.position.z < loopEnd.z)
             {
                 float z = segment.transform.position.z - loopEnd.z;
-                SetNextSegment(segment);
+                if (!simple)
+                {
+                    PopulateSegment(segment); 
+                }
                 segment.transform.position = loopStart + new Vector3(0f, 0f, z);
             }
         }
     }
 
-    private void SetNextSegment(TunnelSegment segment)
+    private void PopulateSegment(TunnelSegment segment)
     {
-
+        List<PanelInfo> row = Services.Game.tunnelData[dataIndex];
+        if (Services.Player.health <= 0 || (!Services.Game.tutorialDone && dataIndex > 65))
+        {
+            for (int i = 0; i < row.Count; i++)
+            {
+                segment.SetPanel(i, empty, true);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < row.Count; i++)
+            {
+                segment.SetPanel(i, row[i], true);
+            }
+            dataIndex++;
+            dataIndex = dataIndex % Services.Game.tunnelData.Count;
+        }
     }
 }

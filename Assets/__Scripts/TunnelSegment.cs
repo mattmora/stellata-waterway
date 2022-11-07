@@ -4,17 +4,11 @@ using UnityEngine;
 
 public class TunnelSegment : MonoBehaviour
 {
-    public List<GameObject> panels;
+    public List<TunnelPanel> panels;
 
-    // Start is called before the first frame update
-    void Start()
+    public void SetPanel(int index, Tunnel.PanelInfo state, bool clear)
     {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        if (clear) panels[index].Clear();
+        panels[index].Set(state);
     }
 }
