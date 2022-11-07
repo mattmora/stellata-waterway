@@ -14,24 +14,29 @@ public class Star : MonoBehaviour
     private Collider coll;
     public Renderer rend;
 
-    private bool activated;
-    private bool recalled;
+    public bool activated;
+    public bool recalled;
 
     private float maxVelocity;
     private float zVelocity;
     private float zVelocityDelta;
 
     public int scoreValue;
-    private float combo;
-    private Color comboColor;
+    public float combo;
+    public Color comboColor;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<Collider>();
         maxVelocity = initialVelocity;
-        combo = 0;
         comboColor = Random.ColorHSV(0f, 1f, 1f, 1f, 1f, 1f);
+    }
+
+    private void Start()
+    {
+        rend.material.color = Color.Lerp(Color.white, comboColor, combo / 20f);
+        trail.material.color = Color.Lerp(Color.white, comboColor, combo / 20f);
     }
 
     // Update is called once per frame
@@ -45,7 +50,7 @@ public class Star : MonoBehaviour
         }
         else
         {
-            zVelocity = Mathf.SmoothDamp(zVelocity, 0f, ref zVelocityDelta, 5f * (initialVelocity / maxVelocity));
+            zVelocity = Mathf.SmoothDamp(zVelocity, 0f, ref zVelocityDelta, 4f * (initialVelocity / maxVelocity));
             transform.RotateAround(new Vector3(0f, 6.25f, transform.position.z), Vector3.forward, rotation * Time.deltaTime);
         }
 
@@ -72,6 +77,7 @@ public class Star : MonoBehaviour
     {
         if (other.CompareTag("Attack"))
         {
+            Services.Player.RefreshJump();
             Services.Game.stars.Enqueue(this);
             combo++;
             Services.Player.score += (int)(scoreValue * Mathf.Pow(combo, 1.2f));
@@ -86,8 +92,8 @@ public class Star : MonoBehaviour
             zVelocityDelta = 0f;
             recalled = false;
 
-            rend.material.color = Color.Lerp(Color.yellow, comboColor, combo / 10f);
-            trail.material.color = Color.Lerp(Color.white, comboColor, combo / 10f);
+            rend.material.color = Color.Lerp(Color.white, comboColor, combo / 20f);
+            trail.material.color = Color.Lerp(Color.white, comboColor, combo / 20f);
 
             Sequence hitStop = DOTween.Sequence();
             hitStop.Append(DOTween.To(() => Time.timeScale, t => Time.timeScale = t, 0.1f, 0.05f));

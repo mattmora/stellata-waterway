@@ -34,7 +34,6 @@ public class Tunnel : MonoBehaviour
     private void Awake()
     {
         if (!simple) Services.MainTunnel = this;
-        dataIndex = 0;
     }
 
     // Start is called before the first frame update
@@ -44,6 +43,8 @@ public class Tunnel : MonoBehaviour
         loopEnd = segments[0].transform.position;
         segments[0].gameObject.SetActive(false);
         segments.RemoveAt(0);
+
+        dataIndex = 0;
     }
 
     // Update is called once per frame
@@ -66,22 +67,28 @@ public class Tunnel : MonoBehaviour
 
     private void PopulateSegment(TunnelSegment segment)
     {
+        if (!Services.Game.hit && dataIndex > 79)
+        {
+            dataIndex = 64;
+        }
+        else if (!Services.Game.recalled && dataIndex > 79)
+        {
+            dataIndex = 72;
+        }
+        else if (Services.Game.tutorialDone && dataIndex < 64)
+        {
+            dataIndex = 64;
+        }
+
         List<PanelInfo> row = Services.Game.tunnelData[dataIndex];
-        if (Services.Player.health <= 0 || (!Services.Game.tutorialDone && dataIndex > 65))
+
+        for (int i = 0; i < row.Count; i++)
         {
-            for (int i = 0; i < row.Count; i++)
-            {
-                segment.SetPanel(i, empty, true);
-            }
+            PanelInfo panelInfo = row[i];
+            if (Services.Player.health <= 0) panelInfo = empty;
+            segment.SetPanel(i, panelInfo, true);
         }
-        else
-        {
-            for (int i = 0; i < row.Count; i++)
-            {
-                segment.SetPanel(i, row[i], true);
-            }
-            dataIndex++;
-            dataIndex = dataIndex % Services.Game.tunnelData.Count;
-        }
+        dataIndex++;
+        dataIndex = dataIndex % Services.Game.tunnelData.Count;
     }
 }

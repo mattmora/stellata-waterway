@@ -4,15 +4,38 @@ using UnityEngine;
 
 public class StarIndicator : MonoBehaviour
 {
+    public Star star;
+    private SpriteRenderer sprite;
+
+    private Vector3 nextPosition;
+    private Quaternion nextRotation;
+
+    private void Awake()
+    {
+        sprite = GetComponent<SpriteRenderer>();
+    }
+
+    private void Start()
+    {
+        sprite.color = star.comboColor;
+        sprite.enabled = false;
+    }
+
     // Update is called once per frame
     void Update()
     {
-        Star nextStar = Services.Game.stars.Peek();
-        if (nextStar != null)
+        if (star.activated)
         {
-            transform.parent = nextStar.transform;
-            transform.localPosition = new Vector3(0f, 0f, -2f);
-            transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
+            bool isNext = Services.Game.stars.Count > 0 && (Services.Game.stars.Peek() == star);
+            sprite.enabled = isNext || star.recalled;
+            //if (star.recalled)
+            //{
+
+            //}
+            //else
+            //{
+            //    transform.SetPositionAndRotation(nextPosition, nextRotation);
+            //}
         }
     }
 }

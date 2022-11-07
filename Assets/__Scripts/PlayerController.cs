@@ -26,9 +26,11 @@ public class PlayerController : MonoBehaviour
     private Camera mainCamera;
 
     private float hInput, vInput;
-    private bool jumping;
+    public bool jumping;
     private bool jumpReady;
-    private bool grounded;
+    public bool grounded;
+    private Vector3 baseJumpPosition;
+    private Sequence lastJump;
     private float initialY;
     private bool swinging;
     private bool invincible;
@@ -38,6 +40,8 @@ public class PlayerController : MonoBehaviour
     public Renderer model;
     public Color damageColor;
 
+    private bool saved;
+
     private void Awake()
     {
         Services.Player = this;
@@ -46,13 +50,16 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
-        initialY = transform.position.y;
+        initialY = jumpPivot.transform.position.y;
+        baseJumpPosition = jumpPivot.transform.localPosition;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (transform.position.y < initialY - 10f)
+        Services.Game.highScore = Mathf.Max(score, Services.Game.highScore);
+
+        if (jumpPivot.transform.position.y < initialY - 5f)
         {
             health = 0;
         }
@@ -60,6 +67,11 @@ public class PlayerController : MonoBehaviour
         if (health <= 0)
         {
             transform.position -= Vector3.forward * 3f * Time.deltaTime;
+            if (!saved)
+            {
+                Services.Game.Save();
+                saved = true;
+            }
         }
         else
         {
@@ -93,7 +105,7 @@ public class PlayerController : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, hInput * (30f - (vInput * 10f)), 0f);
 
         grounded = false;
-        if (Physics.Raycast(jumpPivot.transform.position, Vector3.down, out RaycastHit hit))
+        if (Physics.SphereCast(jumpPivot.transform.position, 0.5f, Vector3.down, out RaycastHit hit, 10f, LayerMask.GetMask("Ground")))
         {
             grounded = hit.collider.CompareTag("Ground");
         }
@@ -103,14 +115,26 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && jumpReady)
         {
             Services.Game.jumped = true;
-            jumpPivot.transform.DOPunchRotation(jumpPivot.transform.right * -45f, jumpDuration, 1, 0.2f);
-            jumpPivot.transform.DOLocalJump(jumpPivot.transform.localPosition, 3f, 1, jumpDuration).SetEase(Ease.Linear).OnComplete(() =>
+
+            if (!jumping)
+            {
+                jumpPivot.transform.DOPunchRotation(jumpPivot.transform.right * -45f, jumpDuration, 1, 0.2f);
+            }
+            else
+            {
+                Services.Game.doubleJumped = true;
+            }
+            if (lastJump != null && lastJump.active) lastJump.Kill();
+            float offset = baseJumpPosition.y - jumpPivot.transform.position.y;
+            float under = Mathf.Max(offset - 3f, 0f);
+            float power = Mathf.Max(3f - offset, 0f);
+            float duration = jumpDuration - (0.5f * offset * 0.3333f * jumpDuration);
+            jumpPivot.transform.DOLocalJump(baseJumpPosition - Vector3.up * under, power, 1, duration).SetEase(Ease.Linear).OnComplete(() =>
             {
                 jumping = false;
             });
             jumping = true;
             jumpReady = false;
-            
         }
 
         // Swing
@@ -140,14 +164,19 @@ public class PlayerController : MonoBehaviour
         }
 
         // Holes
-        if (!grounded && !jumping || transform.position.y < -2f)
+        if (!grounded && !jumping)
         {
-            transform.position -= Vector3.up * 10f * Time.deltaTime;
+            jumpPivot.transform.position -= Vector3.up * 8.5f * Time.deltaTime;
         }
-        else if (transform.position.y < initialY)
-        {
-            transform.position += Vector3.up * 10f * Time.deltaTime;
-        }
+        //else if (transform.position.y < initialY)
+        //{
+        //    transform.position += Vector3.up * 10f * Time.deltaTime;
+        //}
+    }
+
+    public void RefreshJump()
+    {
+        jumpReady = true;
     }
 
     private void OnTriggerEnter(Collider other)
