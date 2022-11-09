@@ -9,6 +9,7 @@ public class Star : MonoBehaviour
     public float initialVelocity;
     public float velocityIncrement;
     public float rotation;
+    private float baseRotation;
     public float rotationIncrement;
     private Rigidbody rb;
     private Collider coll;
@@ -30,6 +31,7 @@ public class Star : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<Collider>();
         maxVelocity = initialVelocity;
+        baseRotation = rotation;
         comboColor = Random.ColorHSV(0f, 1f, 1f, 1f, 1f, 1f);
     }
 
@@ -67,7 +69,6 @@ public class Star : MonoBehaviour
 
     public void Recall()
     {
-        Services.Game.recalled = true;
         coll.enabled = true;
         recalled = true;
         transform.parent = Services.MainTunnel.transform;
@@ -77,20 +78,24 @@ public class Star : MonoBehaviour
     {
         if (other.CompareTag("Attack"))
         {
+            if (recalled) Services.Game.recalled = true;
+            Services.Player.hitAudio.pitch = Mathf.Min(0.8f + (combo * 0.05f), 3f);
+            Services.Player.hitAudio.Play();
             Services.Player.RefreshJump();
             Services.Game.stars.Enqueue(this);
-            combo++;
-            Services.Player.score += (int)(scoreValue * Mathf.Pow(combo, 1.2f));
             Services.Game.hit = true;
             coll.enabled = false;
             activated = true;
             transform.parent = null;
             trail.emitting = true;
-            maxVelocity += velocityIncrement;
-            rotation += rotationIncrement;
+            maxVelocity = initialVelocity + velocityIncrement * combo;
+            rotation = baseRotation + rotationIncrement * combo;
             zVelocity = maxVelocity;
             zVelocityDelta = 0f;
             recalled = false;
+            combo++;
+
+            Services.Player.score += (ulong)(scoreValue * Mathf.Pow(combo, 1.2f) * (1f + (Services.Game.stars.Count / 10f)));
 
             rend.material.color = Color.Lerp(Color.white, comboColor, combo / 20f);
             trail.material.color = Color.Lerp(Color.white, comboColor, combo / 20f);

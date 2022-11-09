@@ -73,8 +73,8 @@ TrailRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Time: 1
+  m_SortingOrder: 1
+  m_Time: 0.7
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 1
@@ -333,13 +333,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   trail: {fileID: 1668421901224949119}
   initialVelocity: 12
-  velocityIncrement: 2
+  velocityIncrement: 1
   rotation: 90
   rotationIncrement: 5
   rend: {fileID: 5629659881031305718}
   activated: 0
   recalled: 0
   scoreValue: 100
+  combo: 0
   comboColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!54 &6535714555350839449
 Rigidbody:
@@ -371,6 +372,18 @@ PrefabInstance:
     - target: {fileID: 924046029851745142, guid: 4921293a0e3bde445ab50842d9d86fd2, type: 3}
       propertyPath: m_RootOrder
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 924046029851745142, guid: 4921293a0e3bde445ab50842d9d86fd2, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 924046029851745142, guid: 4921293a0e3bde445ab50842d9d86fd2, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 924046029851745142, guid: 4921293a0e3bde445ab50842d9d86fd2, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 924046029851745142, guid: 4921293a0e3bde445ab50842d9d86fd2, type: 3}
       propertyPath: m_LocalPosition.x

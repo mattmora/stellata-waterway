@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
 
     public int health;
 
-    public int score;
+    public ulong score;
 
     public float moveSpeed;
     public float scrollSpeedRatio;
@@ -42,6 +42,14 @@ public class PlayerController : MonoBehaviour
 
     private bool saved;
 
+    public AudioSource jumpAudio;
+    public AudioSource doubleJumpAudio;
+    public AudioSource landAudio;
+    public AudioSource swingAudio;
+    public AudioSource hitAudio;
+    public AudioSource recallAudio;
+    public AudioSource damageAudio;
+
     private void Awake()
     {
         Services.Player = this;
@@ -52,26 +60,26 @@ public class PlayerController : MonoBehaviour
     {
         initialY = jumpPivot.transform.position.y;
         baseJumpPosition = jumpPivot.transform.localPosition;
+        saved = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        Services.Game.highScore = Mathf.Max(score, Services.Game.highScore);
+        if (score > Services.Game.highScore) Services.Game.SetHighScore(score);
+
+        // Guard against tutorial exploit
+        if (score > 5000) Services.Game.recalled = true;
 
         if (jumpPivot.transform.position.y < initialY - 5f)
         {
+            if (health > 0) damageAudio.Play();
             health = 0;
         }
 
         if (health <= 0)
         {
             transform.position -= Vector3.forward * 3f * Time.deltaTime;
-            if (!saved)
-            {
-                Services.Game.Save();
-                saved = true;
-            }
         }
         else
         {
@@ -101,6 +109,9 @@ public class PlayerController : MonoBehaviour
         animator.speed = (vInput * 0.2f) + 0.7f;
         mainCamera.fieldOfView = (vInput * 3f) + 60f;
 
+        Services.Game.targetNoisePitch = (vInput * 0.15f) + 1f;
+        Services.Game.targetNoiseVolume = jumping ? 0f : 1f;
+
         // Y Rotation
         transform.rotation = Quaternion.Euler(0f, hInput * (30f - (vInput * 10f)), 0f);
 
@@ -116,22 +127,28 @@ public class PlayerController : MonoBehaviour
         {
             Services.Game.jumped = true;
 
+            float basePower = 3f;
             if (!jumping)
             {
+                jumpAudio.Play();
                 jumpPivot.transform.DOPunchRotation(jumpPivot.transform.right * -45f, jumpDuration, 1, 0.2f);
             }
             else
             {
+                basePower = 2f;
+                doubleJumpAudio.Play();
                 Services.Game.doubleJumped = true;
             }
-            if (lastJump != null && lastJump.active) lastJump.Kill();
+            if (lastJump != null && lastJump.IsPlaying()) lastJump.Kill();
             float offset = baseJumpPosition.y - jumpPivot.transform.position.y;
-            float under = Mathf.Max(offset - 3f, 0f);
-            float power = Mathf.Max(3f - offset, 0f);
+            float under = Mathf.Max(offset - basePower, 0f);
+            float power = Mathf.Max(basePower - offset, 0f);
             float duration = jumpDuration - (0.5f * offset * 0.3333f * jumpDuration);
-            jumpPivot.transform.DOLocalJump(baseJumpPosition - Vector3.up * under, power, 1, duration).SetEase(Ease.Linear).OnComplete(() =>
+            lastJump = jumpPivot.transform.DOLocalJump(baseJumpPosition - Vector3.up * under, power, 1, duration).SetEase(Ease.Linear).OnComplete(() =>
             {
+                if (grounded) landAudio.Play();
                 jumping = false;
+                lastJump = null;
             });
             jumping = true;
             jumpReady = false;
@@ -141,8 +158,9 @@ public class PlayerController : MonoBehaviour
         float swing = 0f;
         if (Input.GetKeyDown(KeyCode.K) || Input.GetMouseButtonDown(0)) swing = -1f;
         //else if (Input.GetKeyDown(KeyCode.RightShift)) swing = -1f;
-        if (swing != 0f && !swinging)
+        if (swing != 0f && !swinging && health > 0)
         {
+            swingAudio.Play();
             swingPivot.transform.DOLocalRotate(new Vector3(0f, 360f * swing, 0f), swingDuration, RotateMode.LocalAxisAdd).SetEase(Ease.OutQuad);
             DOTween.Sequence().AppendInterval(hitDelay).AppendCallback(() =>
             {
@@ -158,8 +176,9 @@ public class PlayerController : MonoBehaviour
             swinging = true;
         }
 
-        if ((Input.GetKeyDown(KeyCode.P) || Input.GetMouseButtonDown(1)) && Services.Game.stars.Count > 0)
+        if ((Input.GetKeyDown(KeyCode.P) || Input.GetMouseButtonDown(1)) && Services.Game.stars.Count > 0 && health > 0)
         {
+            recallAudio.Play();
             Services.Game.stars.Dequeue().Recall();
         }
 
@@ -184,6 +203,7 @@ public class PlayerController : MonoBehaviour
         if (other.CompareTag("Hazard"))
         {
             if (invincible) return;
+            damageAudio.Play();
             health -= 1;
             Sequence blink = DOTween.Sequence();
             for (int i = 1; i <= 6; i++)

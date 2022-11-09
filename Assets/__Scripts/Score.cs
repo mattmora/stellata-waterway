@@ -15,8 +15,8 @@ public class Score : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        int score = Services.Player.score;
-        if (score < 100000)
+        ulong score = Services.Player.score;
+        if (score < 1000000)
         {
             text.text = score.ToString("D6");
         }
@@ -24,7 +24,7 @@ public class Score : MonoBehaviour
         {
             string s = score.ToString("D8");
             s = s.Remove(s.Length - 3);
-            text.text = s + "k";
+            text.text = s + "K";
         }
     }
 }

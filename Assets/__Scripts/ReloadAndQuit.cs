@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 
 public class ReloadAndQuit : MonoBehaviour
@@ -8,6 +9,9 @@ public class ReloadAndQuit : MonoBehaviour
     public bool inputEnabled = false;
     public KeyCode reloadKey = KeyCode.R;
     public KeyCode quitKey = KeyCode.Escape;
+
+    public UnityEvent preReload;
+    public UnityEvent preQuit;
 
     // Update is called once per frame
     void Update()
@@ -25,13 +29,16 @@ public class ReloadAndQuit : MonoBehaviour
         }
     }
 
-    public static void Reload()
+    public void Reload()
     {
+        preReload.Invoke();
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
-    public static void Quit()
+    public void Quit()
     {
+        if (Application.platform == RuntimePlatform.WebGLPlayer) return;
+        preQuit.Invoke();
         Application.Quit();
     }
 }

@@ -25,13 +25,22 @@ public class GameManager : MonoBehaviour
     public bool tutorialDone;
     public bool doubleJumped;
 
-    public int highScore;
+    public ulong highScore;
+
+    private AudioSource music;
+    public AudioSource noise1;
+    public AudioSource noise2;
+    public float targetNoisePitch;
+    private float pitchVelocity;
+    public float targetNoiseVolume;
+    private float volumeVelocity;
+    private float baseVolume;
 
     public class SaveData 
     {
-        public int highScore;
+        public ulong highScore;
 
-        public SaveData(int highScore)
+        public SaveData(ulong highScore)
         {
             this.highScore = highScore;
         }
@@ -42,7 +51,12 @@ public class GameManager : MonoBehaviour
         if (Services.Game == null)
         {
             Services.Game = this;
+            music = GetComponent<AudioSource>();
+            music.Play();
+            noise1.Play();
+            noise2.Play();
             stars = new Queue<Star>();
+            Load();
             DontDestroyOnLoad(gameObject);
         }
         else
@@ -53,11 +67,10 @@ public class GameManager : MonoBehaviour
             Services.Game.reloadPrompt = reloadPrompt;
             Services.Game.midairTip = midairTip;
             Services.Game.stars = new Queue<Star>();
+            Services.Game.Load();
             Destroy(this);
             return;
         }
-
-        Load();
 
         List<Dictionary<string, object>> data = CSVReader.Read("tunnel");
         tunnelData = new List<List<Tunnel.PanelInfo>>();
@@ -79,6 +92,10 @@ public class GameManager : MonoBehaviour
             }
             tunnelData.Add(rowData);
         }
+
+        targetNoisePitch = 1f;
+        baseVolume = noise2.volume;
+        targetNoiseVolume = 1f;
     }
 
     private void Update()
@@ -98,11 +115,22 @@ public class GameManager : MonoBehaviour
 
         bool showMidair = tutorialDone && !doubleJumped && Services.MainTunnel.dataIndex > 208 && Services.MainTunnel.dataIndex < 240;
         midairTip.SetActive(!showReload && showMidair);
+
+        noise1.pitch = Mathf.SmoothDamp(noise1.pitch, targetNoisePitch, ref pitchVelocity, 0.1f);
+        noise2.pitch = noise1.pitch * 0.8f;
+
+        noise2.volume = Mathf.SmoothDamp(noise2.volume, targetNoiseVolume * baseVolume, ref volumeVelocity, 0.05f);
     }
 
     private static int CharacterCount(string s, string ch)
     {
         return s.Length - s.Replace(ch, "").Length;
+    }
+
+    public void SetHighScore(ulong score)
+    {
+        highScore = score;
+        Save();
     }
 
     public void Save()

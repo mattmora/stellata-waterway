@@ -15,16 +15,16 @@ public class HighScore : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        int score = Services.Game.highScore;
-        if (score < 100000)
+        ulong score = Services.Game.highScore;
+        if (score < 1000000000)
         {
-            text.text = score.ToString("D6");
+            text.text = score.ToString("D9");
         }
         else
         {
-            string s = score.ToString("D8");
+            string s = score.ToString("D11");
             s = s.Remove(s.Length - 3);
-            text.text = s + "k";
+            text.text = s + "K";
         }
     }
 }

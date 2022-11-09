@@ -67,13 +67,9 @@ public class Tunnel : MonoBehaviour
 
     private void PopulateSegment(TunnelSegment segment)
     {
-        if (!Services.Game.hit && dataIndex > 79)
+        if (!Services.Game.recalled && dataIndex > 79)
         {
             dataIndex = 64;
-        }
-        else if (!Services.Game.recalled && dataIndex > 79)
-        {
-            dataIndex = 72;
         }
         else if (Services.Game.tutorialDone && dataIndex < 64)
         {
