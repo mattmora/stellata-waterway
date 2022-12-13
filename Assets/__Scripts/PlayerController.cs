@@ -105,7 +105,7 @@ public class PlayerController : MonoBehaviour
         transform.position = position;
 
         // Z Movement
-        tunnel.scrollSpeed = effectiveMoveSpeed * scrollSpeedRatio * (1f + (score / 200000f));
+        tunnel.scrollSpeed = effectiveMoveSpeed * scrollSpeedRatio * (1f + (score / (150000f + score * 0.25f)));
         animator.speed = (vInput * 0.2f) + 0.7f;
         mainCamera.fieldOfView = (vInput * 3f) + 60f;
 
