@@ -39,7 +39,7 @@ public class TunnelPanel : MonoBehaviour
 
         if (state.ballIndex >= 0)
         {
-            float offset = (state.ballIndex / 9) * -2f;
+            float offset = ((state.ballIndex % 18) / 9) * -2f;
             GameObject obj = Instantiate(Services.Game.ballPrefab, slots[state.ballIndex % 9]);
             obj.transform.localPosition += Vector3.forward * offset;
             Star star = obj.GetComponent<Star>();

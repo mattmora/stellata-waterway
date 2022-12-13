@@ -13,6 +13,8 @@ public class Tunnel : MonoBehaviour
 
     private PanelInfo empty = new PanelInfo(true, 0, -1);
 
+    public float offset;
+
     public class PanelInfo 
     {
         public bool active;
@@ -39,8 +41,8 @@ public class Tunnel : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        loopStart = segments[segments.Count - 1].transform.position;
-        loopEnd = segments[0].transform.position;
+        loopStart = segments[segments.Count - 1].transform.position + new Vector3(0f, 0f, offset);
+        loopEnd = segments[0].transform.position + new Vector3(0f, 0f, offset); ;
         segments[0].gameObject.SetActive(false);
         segments.RemoveAt(0);
 

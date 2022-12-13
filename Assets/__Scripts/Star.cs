@@ -82,7 +82,6 @@ public class Star : MonoBehaviour
             Services.Player.hitAudio.pitch = Mathf.Min(0.8f + (combo * 0.05f), 3f);
             Services.Player.hitAudio.Play();
             Services.Player.RefreshJump();
-            Services.Game.stars.Enqueue(this);
             Services.Game.hit = true;
             coll.enabled = false;
             activated = true;
@@ -95,7 +94,8 @@ public class Star : MonoBehaviour
             recalled = false;
             combo++;
 
-            Services.Player.score += (ulong)(scoreValue * Mathf.Pow(combo, 1.2f) * (1f + (Services.Game.stars.Count / 10f)));
+            Services.Player.score += (ulong)(scoreValue * Mathf.Pow(combo, 1.1f) * (1f + (Services.Game.stars.Count)));
+            Services.Game.stars.Enqueue(this);
 
             rend.material.color = Color.Lerp(Color.white, comboColor, combo / 20f);
             trail.material.color = Color.Lerp(Color.white, comboColor, combo / 20f);
